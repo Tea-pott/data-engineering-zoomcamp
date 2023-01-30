@@ -62,7 +62,12 @@ Remember that `lpep_pickup_datetime` and `lpep_dropoff_datetime` columns are in 
 - 20530
 
 ```sql
-
+SELECT COUNT(*)
+FROM green_taxi_data
+WHERE 
+	lpep_pickup_datetime::date = CAST('2019-01-15' AS date)
+AND
+	lpep_dropoff_datetime::date = CAST('2019-01-15' AS date);
 ```
 
 ## Solution 4. Largest trip for each day
@@ -70,20 +75,37 @@ Remember that `lpep_pickup_datetime` and `lpep_dropoff_datetime` columns are in 
 Which was the day with the largest trip distance
 Use the pick up time for your calculations.
 
-- 2019-01-18
-- 2019-01-28
 - 2019-01-15
-- 2019-01-10
+
+```sql
+SELECT 
+	lpep_pickup_datetime::date,
+	MAX(trip_distance) AS max_distance
+FROM green_taxi_data
+GROUP BY 1
+ORDER BY max_distance DESC;
+```
+
 
 ## Solution 5. The number of passengers
 
 In 2019-01-01 how many trips had 2 and 3 passengers?
  
-- 2: 1282 ; 3: 266
-- 2: 1532 ; 3: 126
 - 2: 1282 ; 3: 254
-- 2: 1282 ; 3: 274
 
+```sql
+SELECT
+	passenger_count,
+	lpep_pickup_datetime::date,
+	COUNT(*)
+FROM green_taxi_data
+WHERE 
+	passenger_count IN (2,3)
+AND
+	lpep_pickup_datetime::date = CAST('2019-01-01' AS date)
+GROUP BY
+1,2;
+```
 
 ## Solution 6. Largest tip
 
@@ -92,20 +114,26 @@ We want the name of the zone, not the id.
 
 Note: it's not a typo, it's `tip` , not `trip`
 
-- Central Park
-- Jamaica
-- South Ozone Park
 - Long Island City/Queens Plaza
 
+```sql
+SELECT 
+	g."PULocationID",
+	z."Zone" AS pickup_zone,
+	g."DOLocationID",
+	zoff."Zone" AS dropoff_zone,
+	tip_amount
+FROM green_taxi_data g
+JOIN zones z
+ON z."LocationID" = g."PULocationID"
+JOIN zones zoff
+ON zoff."LocationID" = g."DOLocationID"
+WHERE z."Zone" = 'Astoria'
+ORDER BY tip_amount DESC
+LIMIT 1;
+```
 
 ## Submitting the solutions
 
 * Form for submitting: [form](https://forms.gle/EjphSkR1b3nsdojv7)
 * You can submit your homework multiple times. In this case, only the last submission will be used. 
-
-Deadline: 30 January (Monday), 22:00 CET
-
-
-## Solution
-
-We will publish the solution here
